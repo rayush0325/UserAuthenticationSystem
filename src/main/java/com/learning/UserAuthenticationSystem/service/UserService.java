@@ -1,5 +1,8 @@
 package com.learning.UserAuthenticationSystem.service;
 
+import com.learning.UserAuthenticationSystem.dtos.LoginRequest;
+import com.learning.UserAuthenticationSystem.dtos.LoginResponse;
+import com.learning.UserAuthenticationSystem.dtos.RegisterRequest;
 import com.learning.UserAuthenticationSystem.model.User;
 import com.learning.UserAuthenticationSystem.repository.UserRepository;
 import com.learning.UserAuthenticationSystem.security.jwt.JwtUtils;
@@ -15,10 +18,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-    UserRepository userRepository;
-    PasswordEncoder passwordEncoder;
-    AuthenticationManager authenticationManager;
-    JwtUtils jwtUtils;
+    private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
+    private AuthenticationManager authenticationManager;
+    private JwtUtils jwtUtils;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
@@ -27,11 +30,16 @@ public class UserService {
         this.jwtUtils = jwtUtils;
     }
 
-    public ResponseEntity<?> saveUser(User user) {
+    public ResponseEntity<?> saveUser(RegisterRequest registerRequest) {
         try {
-
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = userRepository.findByUsername(registerRequest.getUsername());
+        if(user != null){
+            throw new RuntimeException("username already present");
+        }
+        user = new User();
+        user.setUsername(registerRequest.getUsername());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setRole(registerRequest.getRole());
         userRepository.save(user);
 
         }catch (Exception exception) {
@@ -40,11 +48,11 @@ public class UserService {
         return new ResponseEntity<>("User Registered Successfully", HttpStatus.OK);
     }
 
-    public ResponseEntity<?> authenticateUser(User user) {
+    public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
         String jwt = null;
         try{
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             UserDetailsImpl userDetails = (UserDetailsImpl)authentication.getPrincipal();
@@ -53,6 +61,6 @@ public class UserService {
         }catch (Exception exception){
             return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(jwt, HttpStatus.OK);
+        return new ResponseEntity<>(new LoginResponse(jwt), HttpStatus.OK);
     }
 }
