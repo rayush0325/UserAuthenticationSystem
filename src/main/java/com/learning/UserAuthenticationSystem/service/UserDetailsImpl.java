@@ -13,10 +13,10 @@ import java.util.List;
 public class UserDetailsImpl implements UserDetails {
 //    static final long serialVersionUID = 1L; check2
 
-    Long id;
-    String username;
-    String password;
-    Collection<? extends GrantedAuthority> authorities;
+    private Long id;
+    private String username;
+    private String password;
+    private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String username, String password, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;

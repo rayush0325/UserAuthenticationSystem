@@ -10,16 +10,15 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
     @Value("${jwt.secret}")
-    String jwtSecret;
+    private String jwtSecret;
     @Value("${jwt.expiration}")
-    int jwtExpirationMs;
+    private int jwtExpirationMs;
 
     public String getJwtFromHeader(HttpServletRequest request){
         String bearerToken = request.getHeader("Authorization");

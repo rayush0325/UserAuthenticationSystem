@@ -15,16 +15,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    JwtUtils jwtUtils;
-    UserDetailsService userDetailsService;
+    private JwtUtils jwtUtils;
+    private UserDetailsService userDetailsService;
 
     public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
     }
-//    public JwtAuthenticationFilter(){
-//
-//    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try{
@@ -32,7 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if(jwtToken != null && jwtUtils.validateToken(jwtToken)){
                 String username = jwtUtils.getUsernameFromToken(jwtToken);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                System.out.println("do filter internal "+ username +" "+ userDetails.getAuthorities());
                 if(userDetails != null){
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource());
